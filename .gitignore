@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+Schema.txt
+
+virtual-environment/
+
+2022/
