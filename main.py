@@ -2,25 +2,26 @@ from cutomer_sales_GUI import customer_info_GUI, final_purchase_summary_GUI, pro
 from pywebio import start_server #for quick testing
 import threading
 import time
+import schedule
 
-def test_thread(name):
+def send_scheduled_mail_to_owner():
+    '''A function that sends email to the owner at schedule time'''
+    print("Hi Anubhav!!! This is a scheduled email to you")
+
+def email_scheduler_thread(name):
     '''Thread to send scheduled mails
     Reference - https://realpython.com/python-async-features/#building-a-synchronous-web-server
+    Reference - https://schedule.readthedocs.io/en/stable/
     '''
-    counter =0
+    schedule.every().day.at("10:30").do(send_scheduled_mail_to_owner)
     while True:
-        with open("test.txt", "a") as f:
-            f.write(f"{counter}\n")
-        time.sleep(30)   
-        counter+=1
-        print("Test thread")
-
-
+        schedule.run_pending()
+        time.sleep(1)
 
 def sales_controller():
     '''Product sales module'''
 
-    threading.Thread(target=test_thread, args=(1,)).start()
+    threading.Thread(target=email_scheduler_thread, args=(1,),daemon=True).start()
     
     customer_info = customer_info_GUI()
 
