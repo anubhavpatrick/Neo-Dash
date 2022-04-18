@@ -119,6 +119,7 @@ def final_purchase_summary_GUI(customer_info, products_dict, product_count, tota
     '''method to display final summary of the products
 
     Args: 
+        customer_info: A dictionary containing customer details
         products_dict: A dictionary containing product details
         product_count: product count'''
 
@@ -168,6 +169,5 @@ def final_purchase_summary_GUI(customer_info, products_dict, product_count, tota
 def create_purchase_report(customer_info, products_dict, product_count, total_price):
     pass
 
-def test(str):
-    convert(str)
+
 

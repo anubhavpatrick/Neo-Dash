@@ -3,6 +3,7 @@ A module containing helper methods for the application
 '''
 
 from tabulate import tabulate
+import datetime
 
 def convert_list_to_table(product_list, product_header_details=["Sno", "Prod\nCategory", "Product\nName", "Quantity", "Original\nPrice", "Discount\n%", "Final\nPrice"]):
     '''

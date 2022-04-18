@@ -4,6 +4,7 @@ A module to save user generated data in xlsx file
 
 import datetime
 import os
+from openpyxl import load_workbook, Workbook
 
 def get_file_name_with_path():
     '''
@@ -12,20 +13,63 @@ def get_file_name_with_path():
     year = datetime.datetime.now().year
     month = datetime.datetime.now().strftime("%B")
     day_name = datetime.datetime.now().strftime("%A")
-    day = datetime.datetime.now().strftime("%D").replace("/","-")
-    file_name = f"{year}/{month}/{day_name}-{day}.xlsx"
-    return file_name
+    day = datetime.datetime.now().strftime("%d-%m-%y")#"%D").replace("/","-")
+    file_path = f"reports/{year}/{month}/"
+    file_name = f"{day_name}-{day}.xlsx"
+    return (file_path, file_name)
 
-def load_file():
-    filename = get_file_name_with_path()
+def create_file(filepath, filename):
+    '''A method that creates a file if it does not exist'''
+    absolute_file_name = filepath + filename
     try:
-        f= open(filename, 'ab')
+        f= open(absolute_file_name, 'ab')
+        #file already exists, do nothing
+        pass
     except FileNotFoundError:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        f= open(filename, 'ab')
-    return f
+        os.makedirs(os.path.dirname(absolute_file_name), exist_ok=True)
+        #f= open(absolute_file_name, 'ab')
+        wb = Workbook()
+        wb.create_sheet("Sheet1")
+        wb.save(absolute_file_name)
 
 def save_data(data):
-    pass
+    
+    filepath, filename = get_file_name_with_path()
+    
+    create_file(filepath, filename)
 
-save_data({"hello":123})
+    absolute_file_path = filepath + filename
+
+    wb = load_workbook(absolute_file_path)
+
+    # grab the active worksheet
+    ws = wb.active
+    
+    # iterate over the data and write it out row by row
+    for row in data:
+        ws.append(row)
+    
+    wb.save(absolute_file_path)
+
+def unfurl_data(customer_info, products_dict, product_count, total_price):
+    '''A method to create a list of lists to be saved in the xlsx file'''
+    data_as_list = list()
+    for i in range(1,product_count+1):
+        temp = list()
+        #order number
+        temp.append(0)
+        temp.append(customer_info["cust_phone"])
+        temp.append(customer_info["cust_name"])
+        temp.append(customer_info["pet_type"])
+        temp.append(customer_info["payment_method"])
+        temp.append(products_dict[f"product_category_{i}"])
+        temp.append(products_dict[f"product_name_{i}"])
+        temp.append(products_dict[f"product_quantity_{i}"])
+        temp.append(products_dict[f"original_price_{i}"])
+        temp.append(products_dict[f"discount_{i}"])
+        temp.append(products_dict[f"final_price_{i}"])
+        data_as_list.append(temp)
+    return data_as_list
+
+
+#save_data({"hello":123})

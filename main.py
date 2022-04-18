@@ -3,9 +3,11 @@ from pywebio import start_server #for quick testing
 import threading
 import time
 import schedule
+import save_as_xlsx
 
 def send_scheduled_mail_to_owner():
     '''A function that sends email to the owner at schedule time'''
+    #simulation of sending email
     print("Hi Anubhav!!! This is a scheduled email to you")
 
 def email_scheduler_thread(name):
@@ -13,7 +15,7 @@ def email_scheduler_thread(name):
     Reference - https://realpython.com/python-async-features/#building-a-synchronous-web-server
     Reference - https://schedule.readthedocs.io/en/stable/
     '''
-    schedule.every().day.at("10:30").do(send_scheduled_mail_to_owner)
+    schedule.every().day.at("22:30").do(send_scheduled_mail_to_owner)
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -25,10 +27,16 @@ def sales_controller():
     
     customer_info = customer_info_GUI()
 
-    products_dict, product_count, total_price =product_detail_GUI()
+    products_dict, product_count, total_price = product_detail_GUI()
 
     final_purchase_summary_GUI(customer_info, products_dict, product_count, total_price)
 
+    #unfurl data into list of lists for writing to xlsx
+    unfurled_data = save_as_xlsx.unfurl_data(customer_info, products_dict, product_count, total_price)
+
+    #save data to xlsx
+    save_as_xlsx.save_data(unfurled_data)
+    
 
 
 if __name__ == '__main__':
