@@ -31,3 +31,10 @@ def create_sales_summary_html(customer_info, products_dict, product_count, total
                 </body></html>\
                 """
     #put_html(customer_receipt_str_html) 
+
+def generate_order_number():
+    '''method to generate  unique order number'''
+    order_no = datetime.datetime.now().strftime('%d%m%y%H%M%S')
+    return order_no
+
+print(generate_order_number())

@@ -2,29 +2,39 @@
 A module for GUI for customer sales
 '''
 
+from functools import partial
 from pywebio.input import input, select, radio,input_group, actions, NUMBER, TEXT, FLOAT
 from pywebio import start_server #for quick testing
 from pywebio.output import put_markdown, put_table,clear, put_button,put_row
 from pywebio.platform.flask import webio_view
+from pywebio.session import eval_js
 from flask import Flask
 import datetime
+import save_as_xlsx
 
 
-order_no = 1
+order_no = 0
 
 #variables to temporarily store product details entered by user
 product_quantity_temp = 1
 original_price_per_item_temp = 0
 discount_overall_temp = 0
 
+
+def set_order_no(o):
+    global order_no 
+    order_no = o
+
+
 def put_header():
     '''method to put header on each page'''
     
     #Headers for the GUI
-    put_markdown("# Welcome to the `Neo Dash ERP` v0.3")
+    put_markdown("# Welcome to the `Neo Dash ERP` v0.4")
     put_markdown("*Made with ❤️ by [Anubhav Patrick](https://www.linkedin.com/in/anubhavpatrick/)*")
     put_markdown(f"### Order No: *{order_no}*")
     put_markdown(f"### Date: *{datetime.datetime.now().strftime('%d-%m-%Y')}*")
+
 
 def customer_info_GUI():
     '''method to create a GUI for customer sales'''
@@ -37,6 +47,7 @@ def customer_info_GUI():
     ], cancelable=True)
     clear()
     return customer_info
+
 
 def product_detail_GUI():
     '''method to input product(s) details
@@ -73,21 +84,26 @@ def product_detail_GUI():
 
     return products_dict, product_count, total_price
 
+
 def update_product_quantity(x):
     global product_quantity_temp
     product_quantity_temp = x
+
 
 def update_original_price_per_item(x):
     global original_price_per_item_temp
     original_price_per_item_temp = x
 
+
 def update_overall_discount(x):
     global discount_overall_temp
     discount_overall_temp = x
 
+
 def calculate_final_price(set_value):
     '''method to calculate final price of the product'''
     set_value(original_price_per_item_temp * product_quantity_temp - (original_price_per_item_temp * product_quantity_temp * discount_overall_temp / 100))
+
 
 def purchase_running_summary_GUI(products_dict, pc):
     '''method to generate purchase summary of the products added till now
@@ -115,6 +131,7 @@ def purchase_running_summary_GUI(products_dict, pc):
     put_markdown(f"### Total Price: *{total_price}*")
     return total_price
     
+
 def final_purchase_summary_GUI(customer_info, products_dict, product_count, total_price):
     '''method to display final summary of the products
 
@@ -124,7 +141,7 @@ def final_purchase_summary_GUI(customer_info, products_dict, product_count, tota
         product_count: product count'''
 
     #Headers for the GUI
-    put_markdown("# Welcome to the `Neo Dash ERP` v0.3")
+    put_markdown("# Welcome to the `Neo Dash ERP` v0.4")
     put_markdown("*Made with ❤️ by [Anubhav Patrick](https://www.linkedin.com/in/anubhavpatrick/)*")
 
     customer_receipt_str = f"""# <center>NeoDash Pet Universe</center> \n \
@@ -158,12 +175,23 @@ def final_purchase_summary_GUI(customer_info, products_dict, product_count, tota
 
     put_markdown(f"""\n<h3><p align='right'>Total Price: {total_price}</p></h3>
     <i><p align='center'>Thank You For Shopping With Us!</p></i>""")
-
     '''put_buttons([dict(label = 'Generate and Log Final Receipt', color='success', value ='generate'), 
                 dict(label ='Cancel and Restart', color = 'danger', value ='cancel')],onclick=None)
     '''
-    put_row([None, put_button(label = 'Generate and Log Final Receipt', color='success', onclick=None), 
-                put_button(label ='Cancel and Restart', color = 'danger',onclick=None)], size ='23% 30% 47%')
+    put_row([None, put_button(label = 'Generate and Log Final Receipt', color='success', onclick=partial(generate_final_receipt_and_log,customer_info, products_dict, product_count, total_price, order_no)), 
+                put_button(label ='Cancel and Restart', color = 'danger',onclick=pageReload)], size ='23% 30% 47%')
+
+
+def generate_final_receipt_and_log(customer_info, products_dict, product_count, total_price, order_no):
+    #unfurl data into list of lists for writing to xlsx
+    unfurled_data = save_as_xlsx.unfurl_data(customer_info, products_dict, product_count, total_price, order_no)
+    
+    #save data to xlsx
+    save_as_xlsx.save_data(unfurled_data)
+
+
+def pageReload():
+    eval_js("location.reload()")
 
 
 def create_purchase_report(customer_info, products_dict, product_count, total_price):

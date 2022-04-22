@@ -27,9 +27,8 @@ def create_file(filepath, filename):
         pass
     except FileNotFoundError:
         os.makedirs(os.path.dirname(absolute_file_name), exist_ok=True)
-        #f= open(absolute_file_name, 'ab')
         wb = Workbook()
-        wb.create_sheet("Sheet1")
+        wb.create_sheet("Sales_Report")
         wb.save(absolute_file_name)
 
 def save_data(data):
@@ -51,13 +50,13 @@ def save_data(data):
     
     wb.save(absolute_file_path)
 
-def unfurl_data(customer_info, products_dict, product_count, total_price):
+def unfurl_data(customer_info, products_dict, product_count, total_price, order_no):
     '''A method to create a list of lists to be saved in the xlsx file'''
     data_as_list = list()
     for i in range(1,product_count+1):
         temp = list()
         #order number
-        temp.append(0)
+        temp.append(order_no)
         temp.append(customer_info["cust_phone"])
         temp.append(customer_info["cust_name"])
         temp.append(customer_info["pet_type"])
