@@ -1,9 +1,8 @@
-from cutomer_sales_GUI import customer_info_GUI, final_purchase_summary_GUI, product_detail_GUI, set_order_no
-from pywebio import start_server #for quick testing
+from cutomer_sales_GUI import customer_info_GUI, display_additional_options, final_purchase_summary_GUI, product_detail_GUI, set_order_no
+from pywebio import start_server, config #for quick testing
 import threading
 import time
 import schedule
-import save_as_xlsx
 import helpers
 
 
@@ -23,6 +22,7 @@ def email_scheduler_thread(name):
         schedule.run_pending()
         time.sleep(1)
 
+@config(theme='dark')
 def sales_controller():
     '''Product sales controller'''
 
@@ -37,10 +37,10 @@ def sales_controller():
     customer_info = customer_info_GUI()
 
     #a method for displaying product details GUI and enter details of items purchased
-    products_dict, product_count, total_price = product_detail_GUI()
+    products_dict = product_detail_GUI()
 
     #a method for displaying final purchase summary
-    final_purchase_summary_GUI(customer_info, products_dict, product_count, total_price)     
+    final_purchase_summary_GUI(customer_info, products_dict)     
 
     '''print(get_generate_log_final_receipt_button())
 

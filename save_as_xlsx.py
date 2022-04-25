@@ -71,4 +71,13 @@ def unfurl_data(customer_info, products_dict, product_count, total_price, order_
     return data_as_list
 
 
+def generate_final_receipt_and_log(customer_info, products_dict, product_count, total_price, order_no):
+    #unfurl data into list of lists for writing to xlsx
+    unfurled_data = unfurl_data(customer_info, products_dict, product_count, total_price, order_no)
+    
+    #save data to xlsx
+    save_data(unfurled_data)
+
+
+
 #save_data({"hello":123})
