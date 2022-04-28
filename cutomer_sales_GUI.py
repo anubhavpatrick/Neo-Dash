@@ -5,12 +5,11 @@ A module for GUI for customer sales
 from functools import partial
 from pywebio.input import input, select, radio,input_group, actions, NUMBER, TEXT, FLOAT
 from pywebio import start_server #for quick testing
-from pywebio.output import put_markdown, put_table,clear, put_button,put_row, put_tabs, put_link, span, put_buttons, toast
+from pywebio.output import put_markdown, put_table,clear, put_button,put_row, put_tabs, put_link, span, put_buttons, toast, put_image
 from pywebio.platform.flask import webio_view
 from pywebio.session import eval_js
 from flask import Flask
 import datetime
-import save_as_xlsx
 
 
 order_no = 0
@@ -278,12 +277,12 @@ def final_purchase_summary_GUI(customer_info, products_dict):
 
     put_markdown(f"""\n<h3><p align='right'>Total Price: {total_price}</p></h3>
     <p align='right' style='color:red;'>Tax (GST/CGST): {tax}%</p></h3>
-    <h3><p align='right' style='color:green;'>Total Price After Tax: {total_price_after_tax}</p></h3>
+    <h3><p align='right' style='color:green;'>Total Price After Tax: {total_price_after_tax:.2f}</p></h3>
     <i><p align='center'>Thank You For Shopping With Us!</p></i>""")
     
     put_row([put_button(label ='Enter or Update Tax Details', color = 'primary',onclick=partial(add_tax, customer_info, products_dict)), 
-                put_button(label = 'Update Product Details', color='warning', onclick=partial(purchase_running_summary_GUI, products_dict)),
-                put_button(label = 'Generate & Log Final Receipt', color='success', onclick=partial(generate_final_receipt_and_log,customer_info, products_dict, product_count, total_price, order_no)), 
+                put_button(label = 'Update Product Details', color='warning', onclick=partial(update_product_detail_GUI, products_dict)),
+                put_button(label = 'Generate & Log Final Receipt', color='success', onclick=partial(generate_final_receipt_and_log)), 
                 put_button(label ='Cancel and Restart', color = 'danger',onclick=pageReload),
                 ])
 
@@ -301,7 +300,58 @@ def add_tax(customer_info, products_dict):
     clear()
     final_purchase_summary_GUI(customer_info, products_dict)
 
-def generate_final_receipt_and_log(customer_info, products_dict, total_price, order_no):
+
+def update_product_detail_GUI(products_dict):
+    '''method to update/insert new product(s) details after items were added and final summary is generated
+    It then calls the final summary GUI to display the summary of updated product details
+    
+    Returns: 
+        None 
+    '''
+
+    #display purchase summary
+    purchase_running_summary_GUI(products_dict)
+
+    #Reset the global variables for product quantity, product price and discount
+    update_product_quantity(1)
+    update_overall_discount(0)
+    update_original_price_per_item(0)
+
+    ch = actions('Do you want to add more items', ['Yes', 'No'], help_text="Do note you can update the final details of the products later")
+    clear()
+    
+    while ch== "Yes":
+        put_header()
+        pc = product_count + 1
+        info = input_group(f"Enter Details of Product #{pc}:", [
+            select("Product Category", ["Accessory", "Bowls", "Food", "Dental", "Shampoo/Conditioner", "Toys", "Treats","Other"], name=f"product_category_{pc}", required=True),
+            input("Product Name", type=TEXT, name=f"product_name_{pc}", placeholder = "Beautiful Product", help_text="This field is optional", value="Beautiful Product", required=False),
+            input("Product Quantity", type=NUMBER, name=f"product_quantity_{pc}", placeholder = "1", help_text="This field is optional", value="1", required=False, onchange=update_product_quantity),
+            input("Original Price (Per Item)", type= NUMBER,name = f"original_price_{pc}", validate = lambda x: None if x >= 0 else 'Price must be greater than 0', help_text="This field is optional", value=0,  onchange= update_original_price_per_item),
+            input("Discount %", type= FLOAT,name = f"discount_{pc}", validate = lambda x: None if x >= 0 and x <= 100 else 'Discount must be between 0 and 100', help_text="This field is optional", value=0, onchange= update_overall_discount),
+            input("Final Price (Overall)", type= FLOAT,name = f"final_price_{pc}", required=True, value =0, placeholder=0, action = ('Calculate',calculate_final_price))
+            ], cancelable=True)
+
+        #Update global product count
+        set_product_count(pc)
+
+        products_dict.update(info)
+
+        #display purchase summary
+        purchase_running_summary_GUI(products_dict)
+
+        #Reset the global variables for product quantity, product price and discount
+        update_product_quantity(1)
+        update_overall_discount(0)
+        update_original_price_per_item(0)
+
+        ch = actions('Do you want to add more items', ['Yes', 'No'], help_text="Do note you can update the final details of the products later")
+        clear()
+
+    final_purchase_summary_GUI(products_dict)
+
+
+def generate_final_receipt_and_log():#customer_info, products_dict, total_price, order_no):
     '''clear()
     put_header_minimal()
     try:
@@ -313,6 +363,8 @@ def generate_final_receipt_and_log(customer_info, products_dict, total_price, or
                         {str(e)} \n\
                         *Please contact admin [Anubhav Patrick](https://www.linkedin.com/in/anubhavpatrick/) 😎 for further assistance* """)
 '''
+    put_image("https://media.giphy.com/media/LQXPmp4hdcwPRue8b3/giphy.gif")
+
 def pageReload():
     eval_js("location.reload()")
 
