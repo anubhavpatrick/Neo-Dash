@@ -35,9 +35,12 @@ def set_tax(x):
     tax = x
 
 
-def set_total_price_after_tax():
+def set_total_price_after_tax(tp = None):
     global total_price_after_tax
-    total_price_after_tax = total_price + (tax/100.0 * total_price)
+    if tp is None:
+        total_price_after_tax = total_price + (tax/100.0 * total_price)
+    else:
+        total_price_after_tax = tp
 
 
 def set_product_count(x):
@@ -282,6 +285,7 @@ def final_purchase_summary_GUI(customer_info, products_dict):
     
     put_row([put_button(label ='Enter or Update Tax Details', color = 'primary',onclick=partial(add_tax, customer_info, products_dict)), 
                 put_button(label = 'Update Product Details', color='warning', onclick=partial(update_product_detail_GUI, products_dict)),
+                put_button(label = 'Manually Update Final Price', color='warning', onclick=partial(manually_update_final_price, customer_info, products_dict)),
                 put_button(label = 'Generate & Log Final Receipt', color='success', onclick=partial(generate_final_receipt_and_log)), 
                 put_button(label ='Cancel and Restart', color = 'danger',onclick=pageReload),
                 ])
@@ -299,6 +303,13 @@ def add_tax(customer_info, products_dict):
     set_total_price_after_tax()
     clear()
     final_purchase_summary_GUI(customer_info, products_dict)
+
+
+def manually_update_final_price(cutomer_info, products_dict):
+    updated_final_price = input("Enter Updated Final Price (including Tax) %: ", type = FLOAT, validate = lambda x: None if x >= 0 else 'Final price (after tax) must be between > Rs 100')
+    set_total_price_after_tax(updated_final_price)
+    clear()
+    final_purchase_summary_GUI(cutomer_info, products_dict)
 
 
 def update_product_detail_GUI(products_dict):
@@ -342,7 +353,7 @@ def update_product_detail_GUI(products_dict):
 
         #Reset the global variables for product quantity, product price and discount
         update_product_quantity(1)
-        update_overall_discount(0)
+        update_overall_discount(0)       
         update_original_price_per_item(0)
 
         ch = actions('Do you want to add more items', ['Yes', 'No'], help_text="Do note you can update the final details of the products later")
